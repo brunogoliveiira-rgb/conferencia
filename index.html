@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <!-- Tags para PWA e Mobile -->
+    <!-- Configurações PWA -->
     <meta name="theme-color" content="#2c3e50">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -42,15 +42,13 @@
             min-height: 100vh; 
             padding: 15px; 
             box-sizing: border-box; 
-            display: flex;
-            flex-direction: column;
         }
         
-        /* Cabeçalho Ajustado */
+        /* Cabeçalho */
         .app-header { 
             background: var(--primary); 
             color: white; 
-            padding: 10px; 
+            padding: 12px; 
             border-radius: 0 0 15px 15px; 
             margin: -15px -15px 10px -15px; 
             text-align: center; 
@@ -59,7 +57,7 @@
         .app-header h1 { margin: 0; font-size: 1.1rem; text-transform: uppercase; }
         .app-header p { margin: 3px 0 0 0; opacity: 0.8; font-size: 0.8rem; }
 
-        /* Abas Estilo App */
+        /* Abas */
         .tabs { display: flex; background: #eee; padding: 4px; border-radius: 12px; margin-bottom: 15px; }
         .tab-btn { 
             flex: 1; border: none; padding: 12px; border-radius: 10px; 
@@ -69,7 +67,7 @@
         .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .tab-btn span { background: #ddd; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; margin-left: 5px; }
 
-        /* Grade de Botões */
+        /* Botões */
         .button-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
         .btn { 
             border: none; padding: 14px 5px; border-radius: 10px; 
@@ -83,10 +81,10 @@
             font-size: 1rem; outline: none;
         }
 
-        /* CAMPO DE OBSERVAÇÃO MAIOR */
+        /* CAMPO DE OBSERVAÇÃO GRANDE */
         .obs-container textarea { 
             width: 100%; 
-            min-height: 120px; /* Aumentado de 60 para 120 */
+            min-height: 120px; 
             border-radius: 10px; 
             border: 1px solid #ddd; 
             padding: 12px; 
@@ -107,12 +105,11 @@
         .prod-badge { background: var(--accent); color: white; padding: 3px 12px; border-radius: 10px; font-size: 0.8rem; }
 
         .delivery-item { display: flex; align-items: center; padding: 12px 10px 12px 45px; border-bottom: 1px solid #f5f5f5; font-size: 0.9rem; }
-        .delivery-item input { width: 20px; height: 20px; margin-right: 12px; }
         .item-checked { background: #e8f5e9; }
         .item-checked .delivery-text { text-decoration: line-through; opacity: 0.5; }
         .group-checked { border: 2.5px solid var(--success); }
 
-        /* Calculadora Flutuante */
+        /* Calculadora */
         #calcBtn { 
             position: fixed; bottom: 25px; right: 25px; 
             width: 65px; height: 65px; border-radius: 50%; 
@@ -123,7 +120,12 @@
         
         /* Modais */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 400px; box-sizing: border-box; }
+        .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 450px; box-sizing: border-box; }
+
+        /* Itens do Histórico */
+        .history-item { border-bottom: 1px solid #eee; padding: 12px 0; display: flex; justify-content: space-between; align-items: center; }
+        .history-btn-group { display: flex; gap: 8px; }
+        .btn-mini { padding: 8px 12px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 0.75rem; }
 
         @media print {
             .no-print, #calcBtn, .tabs, .button-grid, .search-box { display: none !important; }
@@ -166,7 +168,7 @@
 <div id="historyModal" class="modal" onclick="this.style.display='none'">
     <div class="modal-content" onclick="event.stopPropagation()">
         <h2 style="margin:0 0 15px 0; font-size:1.2rem; color:var(--primary);">Histórico de Cargas</h2>
-        <div id="historyList" style="max-height:350px; overflow-y:auto;"></div>
+        <div id="historyList" style="max-height:400px; overflow-y:auto;"></div>
         <button class="btn" style="background:var(--primary); width:100%; margin-top:15px;" onclick="toggleModal('historyModal')">Fechar</button>
     </div>
 </div>
@@ -178,7 +180,7 @@
     </div>
 
     <div class="no-print">
-        <div class="button-grid" style="margin-top:5px;">
+        <div class="button-grid">
             <button class="btn" style="background:var(--primary)" onclick="document.getElementById('pdfFile').click()">📂 PDF</button>
             <button class="btn" style="background:#6c5ce7" onclick="showHistory()">📜 HIST</button>
             <button class="btn" style="background:var(--success)" onclick="saveToHistory()">💾 SALVAR</button>
@@ -193,7 +195,7 @@
         
         <div class="button-grid">
             <button class="btn" style="background:var(--info)" onclick="window.print()">📄 RELATÓRIO</button>
-            <button class="btn" style="background:var(--danger)" onclick="resetApp()">🗑️ LIMPAR TUDO</button>
+            <button class="btn" style="background:var(--danger)" onclick="resetApp()">🗑️ LIMPAR</button>
         </div>
         <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
     </div>
@@ -207,13 +209,6 @@
 </div>
 
 <script>
-    // REGISTRO PWA
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-        .then(() => console.log("PWA Registrado com sucesso"))
-        .catch(err => console.log("Erro ao registrar PWA", err));
-    }
-
     const pdfjsLib = window['pdfjs-dist/build/pdf'];
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
@@ -244,7 +239,7 @@
                 }
                 parsePDFData(fullLines);
             } catch (err) {
-                alert("Erro ao ler PDF: " + err.message);
+                alert("Erro: " + err.message);
                 document.getElementById('loading').style.display = 'none';
             }
         };
@@ -260,9 +255,7 @@
                 document.getElementById('obsArea').style.display = 'block';
                 document.getElementById('tabBar').style.display = 'flex';
             }
-            if (l.includes("Veiculo:")) {
-                document.getElementById('lblVeiculo').innerText = l.split("Veiculo:")[1].split("Placa")[0].trim();
-            }
+            if (l.includes("Veiculo:")) document.getElementById('lblVeiculo').innerText = l.split("Veiculo:")[1].split("Placa")[0].trim();
 
             const prod = l.match(/^(\d{1,5})\s+(.+?)\s+(\d+[,.]?\d*)\s+([a-zA-Z]{2,6})\s+(\d+[,.]\d{4})$/);
             const del = l.match(/^(\d{6})\s+(\d{2}\/\d{2}\/\d{4})\s+(.*?)\s+(\d+[,.]?\d*)\s+([a-zA-Z]{2,6})\s+([\d.,]+)$/);
@@ -274,11 +267,9 @@
                 current.deliveries.push({ order: del[1], client: del[3].trim(), qty: del[4], unit: del[5].toUpperCase(), checked: false });
             }
         });
-        saveCurrentState();
-        render();
+        saveCurrentState(); render();
     }
 
-    // --- RENDERIZAÇÃO ---
     function render() {
         const list = document.getElementById('checklist');
         list.innerHTML = '';
@@ -304,8 +295,7 @@
                                 <span><b style="color:var(--info)">${d.order}</b> ${d.client}</span>
                                 <span style="font-weight:bold">${d.qty} ${d.unit}</span>
                             </div>
-                        </div>
-                    `).join('')}
+                        </div>`).join('')}
                 </div>`;
             list.appendChild(group);
             updateProdCounter(pIdx);
@@ -334,20 +324,17 @@
         document.getElementById('countCompleted').innerText = comp;
     }
 
-    // --- LOGICA DE CHECK ---
     function handleHeaderClick(e, pIdx) { if (e.target.tagName !== 'INPUT') { const cb = document.getElementById(`pCheck-${pIdx}`); cb.checked = !cb.checked; toggleParent(pIdx); } }
     function toggleParent(pIdx) {
         const val = document.getElementById(`pCheck-${pIdx}`).checked;
         masterData[pIdx].completed = val;
         masterData[pIdx].deliveries.forEach(d => d.checked = val);
-        saveCurrentState();
-        render();
+        saveCurrentState(); render();
     }
     function toggleChild(pIdx, dIdx) {
         masterData[pIdx].deliveries[dIdx].checked = !masterData[pIdx].deliveries[dIdx].checked;
         masterData[pIdx].completed = masterData[pIdx].deliveries.every(d => d.checked);
-        saveCurrentState();
-        render();
+        saveCurrentState(); render();
     }
     function updateProdCounter(pIdx) {
         const chk = masterData[pIdx].deliveries.filter(d => d.checked).length;
@@ -355,29 +342,32 @@
         if(el) el.innerText = `(${chk}/${masterData[pIdx].deliveries.length})`;
     }
 
-    // --- PERSISTÊNCIA ---
+    // --- PERSISTÊNCIA E HISTÓRICO ---
     function saveCurrentState() {
         const payload = { masterData, motorista: document.getElementById('lblMotorista').innerText, veiculo: document.getElementById('lblVeiculo').innerText, obs: document.getElementById('txtObs').value };
         localStorage.setItem('current_romaneio', JSON.stringify(payload));
     }
 
     function saveToHistory() {
-        if (!masterData.length) return alert("Sem dados para salvar.");
+        if (!masterData.length) return alert("Sem dados.");
         const history = JSON.parse(localStorage.getItem('romaneio_history') || '[]');
         history.unshift({ id: Date.now(), date: new Date().toLocaleString(), motorista: document.getElementById('lblMotorista').innerText, veiculo: document.getElementById('lblVeiculo').innerText, data: masterData, obs: document.getElementById('txtObs').value });
         localStorage.setItem('romaneio_history', JSON.stringify(history));
-        alert("Salvo no histórico com sucesso!");
+        alert("Salvo no histórico!");
     }
 
     function showHistory() {
         const history = JSON.parse(localStorage.getItem('romaneio_history') || '[]');
         const list = document.getElementById('historyList');
-        list.innerHTML = history.length ? '' : '<p>Nenhum salvo.</p>';
+        list.innerHTML = history.length ? '' : '<p>Vazio.</p>';
         history.forEach(item => {
             const div = document.createElement('div');
-            div.style = "border-bottom:1px solid #eee; padding:12px; display:flex; justify-content:space-between; align-items:center;";
+            div.className = 'history-item';
             div.innerHTML = `<div><b>${item.motorista}</b><br><small>${item.date}</small></div>
-                             <button onclick="loadHistoryItem(${item.id})" style="background:var(--info); color:white; border:none; padding:8px 12px; border-radius:8px;">Ver</button>`;
+                             <div class="history-btn-group">
+                                <button onclick="loadHistoryItem(${item.id})" class="btn-mini" style="background:var(--info)">Ver</button>
+                                <button onclick="deleteHistoryItem(${item.id})" class="btn-mini" style="background:var(--danger)">X</button>
+                             </div>`;
             list.appendChild(div);
         });
         toggleModal('historyModal');
@@ -386,11 +376,20 @@
     function loadHistoryItem(id) {
         const history = JSON.parse(localStorage.getItem('romaneio_history') || '[]');
         const item = history.find(h => h.id === id);
-        if (item && confirm("Substituir a conferência atual por esta?")) {
+        if (item && confirm("Substituir atual?")) {
             masterData = item.data; document.getElementById('lblMotorista').innerText = item.motorista;
             document.getElementById('lblVeiculo').innerText = item.veiculo; document.getElementById('txtObs').value = item.obs;
             document.getElementById('obsArea').style.display = 'block'; document.getElementById('tabBar').style.display = 'flex';
             toggleModal('historyModal'); render();
+        }
+    }
+
+    function deleteHistoryItem(id) {
+        if (confirm("Excluir este item do histórico permanentemente?")) {
+            let history = JSON.parse(localStorage.getItem('romaneio_history') || '[]');
+            history = history.filter(h => h.id !== id);
+            localStorage.setItem('romaneio_history', JSON.stringify(history));
+            showHistory();
         }
     }
 
@@ -399,17 +398,17 @@
     function toggleModal(id) { document.getElementById(id).style.display = (document.getElementById(id).style.display === 'flex') ? 'none' : 'flex'; }
     function pressCalc(v) { calcStr += v; document.getElementById('calcDisplay').value = calcStr; }
     function clearCalc() { calcStr = ""; document.getElementById('calcDisplay').value = "0"; }
-    function executeCalc() { try { calcStr = eval(calcStr).toString(); document.getElementById('calcDisplay').value = calcStr; } catch { alert("Erro de cálculo"); clearCalc(); } }
+    function executeCalc() { try { calcStr = eval(calcStr).toString(); document.getElementById('calcDisplay').value = calcStr; } catch { alert("Erro"); clearCalc(); } }
 
-    function resetApp() { if(confirm('Isso limpará tudo e começará do zero. Tem certeza?')) { localStorage.removeItem('current_romaneio'); location.reload(); } }
+    function resetApp() { if(confirm('Limpar tudo?')) { localStorage.removeItem('current_romaneio'); location.reload(); } }
 
     window.onload = () => {
         const saved = localStorage.getItem('current_romaneio');
         if (saved) {
             const d = JSON.parse(saved);
-            masterData = d.masterData; document.getElementById('lblMotorista').innerText = d.motorista;
-            document.getElementById('lblVeiculo').innerText = d.veiculo; document.getElementById('txtObs').value = d.obs || "";
-            if(masterData.length > 0) {
+            if (d.masterData && d.masterData.length > 0) {
+                masterData = d.masterData; document.getElementById('lblMotorista').innerText = d.motorista;
+                document.getElementById('lblVeiculo').innerText = d.veiculo; document.getElementById('txtObs').value = d.obs || "";
                 document.getElementById('obsArea').style.display = 'block'; document.getElementById('tabBar').style.display = 'flex';
                 render();
             }
