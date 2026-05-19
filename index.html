@@ -2,96 +2,392 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#2c3e50">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1573/1573145.png">
-    <title>Art Conferência</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema ART Atacadista - Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <style>
-        /* ESTILOS (Mesmos do anterior com melhorias mobile) */
-        :root { --primary: #2c3e50; --accent: #e67e22; --success: #27ae60; --danger: #e74c3c; --info: #3498db; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        .container { max-width: 900px; margin: 0 auto; background: white; min-height: 100vh; padding: 15px; box-sizing: border-box; }
-        
-        /* Cabeçalho App Style */
-        .app-header { background: var(--primary); color: white; padding: 15px; border-radius: 0 0 15px 15px; margin: -15px -15px 15px -15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .app-header h1 { margin: 0; font-size: 1.2rem; }
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --info: #3498db;
+            --bg: #f4f7f6;
+        }
 
-        /* Abas Estilo App */
-        .tabs { display: flex; background: #eee; padding: 4px; border-radius: 12px; margin-bottom: 15px; }
-        .tab-btn { flex: 1; border: none; padding: 10px; border-radius: 10px; font-weight: bold; color: #666; background: none; transition: 0.2s; font-size: 0.85rem; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); margin: 0; padding: 0; }
+        
+        .container { max-width: 900px; margin: 20px auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; }
+        
+        .driver-header { background: var(--primary); color: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; text-align: center; }
+        .driver-header h1 { margin: 0; font-size: 1.3rem; text-transform: uppercase; }
+
+        /* Abas e Ferramentas */
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; background: #eee; padding: 5px; border-radius: 10px; }
+        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: #666; background: none; transition: 0.3s; font-size: 0.85rem; }
         .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .tab-btn span { background: #ddd; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; margin-left: 5px; }
 
-        /* Botões Flutuantes e Fixos */
-        .button-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
-        .btn { border: none; padding: 12px 5px; border-radius: 10px; color: white; font-weight: bold; font-size: 0.75rem; cursor: pointer; text-align: center; }
-        
-        /* Restante do CSS anterior mantido para Checklist e Calculadora... */
-        .product-group { border: 1px solid #ddd; border-radius: 12px; margin-bottom: 10px; overflow: hidden; background: white; }
-        .product-header { background: #f9f9f9; padding: 12px; display: flex; align-items: center; border-bottom: 1px solid #eee; }
-        .product-header input { width: 22px; height: 22px; margin-right: 12px; }
+        .header-tools { position: sticky; top: 0; background: white; z-index: 100; padding: 10px 0; border-bottom: 2px solid #eee; margin-bottom: 15px; }
+        .search-box { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; margin-bottom: 10px; box-sizing: border-box; }
+
+        .button-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 10px; }
+        .btn { padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; display: flex; align-items: center; gap: 5px; justify-content: center; font-size: 0.8rem; text-transform: uppercase; }
+        .btn-upload { background: var(--primary); }
+        .btn-history { background: #6c5ce7; }
+        .btn-save { background: var(--success); }
+        .btn-export { background: var(--info); }
+        .btn-clear { background: var(--danger); }
+
+        /* Checklist */
+        .product-group { border: 1px solid #dcdde1; border-radius: 10px; margin-bottom: 10px; background: #fff; }
+        .product-header { background: #f8f9fa; padding: 10px 15px; display: flex; align-items: center; cursor: pointer; }
+        .product-header input { width: 22px; height: 22px; margin-right: 12px; cursor: pointer; }
         .prod-info { flex-grow: 1; display: flex; justify-content: space-between; align-items: center; }
-        .delivery-item { display: flex; align-items: center; padding: 10px 10px 10px 45px; border-bottom: 1px solid #f5f5f5; font-size: 0.85rem; }
-        .item-checked { background: #e8f5e9; color: #888; text-decoration: line-through; }
-        
-        /* Calculadora Pop-up */
-        #calcBtn { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: var(--accent); color: white; border: none; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 1000; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .prod-name { font-weight: 800; color: var(--primary); font-size: 0.9rem; }
+        .prod-badge { background: var(--accent); color: white; padding: 2px 10px; border-radius: 15px; font-size: 0.75rem; }
 
-        @media print { .no-print { display: none !important; } .container { width: 100%; margin: 0; } }
+        .delivery-item { display: flex; align-items: center; padding: 8px 15px 8px 45px; border-bottom: 1px solid #f1f2f6; }
+        .delivery-item input { width: 18px; height: 18px; margin-right: 12px; }
+        .delivery-text { flex-grow: 1; display: flex; justify-content: space-between; font-size: 0.85rem; }
+
+        .item-checked { background: #f0fff4; }
+        .item-checked .delivery-text { text-decoration: line-through; opacity: 0.5; }
+        .group-checked { border-color: var(--success); background: #f1fcf1; }
+
+        /* Modais */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
+        
+        /* Lista de Histórico */
+        .history-card { border: 1px solid #ddd; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; }
+        .history-info b { display: block; color: var(--primary); }
+        .history-info small { color: #888; }
+        .history-actions { display: flex; gap: 5px; }
+
+        /* Calculadora Flutuante */
+        #calcBtn { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; border-radius: 50%; background: var(--accent); color: white; border: none; font-size: 22px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+
+        @media print {
+            .tabs, .header-tools, #calcBtn, .btn, .search-box { display: none !important; }
+            .product-group { display: block !important; break-inside: avoid; border: 1px solid #ccc; }
+            .container { box-shadow: none; margin: 0; width: 100%; }
+        }
     </style>
 </head>
 <body>
 
-<button id="calcBtn" class="no-print" onclick="toggleModal('calcModal')">➕</button>
+<button id="calcBtn" onclick="toggleModal('calcModal')">➕</button>
+
+<!-- MODAL CALCULADORA -->
+<div id="calcModal" class="modal" onclick="this.style.display='none'">
+    <div class="modal-content" onclick="event.stopPropagation()" style="background:#333; width: 280px;">
+        <input type="text" id="display" style="width:100%; height:50px; text-align:right; font-size:24px; margin-bottom:10px; padding:10px; box-sizing:border-box;" disabled value="0">
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px;">
+            <button onclick="clearCalc()" style="grid-column: span 2; background:var(--danger); color:white; padding:15px; border-radius:8px;">C</button>
+            <button onclick="press('/')" style="background:var(--accent); color:white; padding:15px; border-radius:8px;">÷</button>
+            <button onclick="press('*')" style="background:var(--accent); color:white; padding:15px; border-radius:8px;">×</button>
+            <button onclick="press('7')" style="background:#555; color:white; padding:15px; border-radius:8px;">7</button>
+            <button onclick="press('8')" style="background:#555; color:white; padding:15px; border-radius:8px;">8</button>
+            <button onclick="press('9')" style="background:#555; color:white; padding:15px; border-radius:8px;">9</button>
+            <button onclick="press('-')" style="background:var(--accent); color:white; padding:15px; border-radius:8px;">-</button>
+            <button onclick="press('4')" style="background:#555; color:white; padding:15px; border-radius:8px;">4</button>
+            <button onclick="press('5')" style="background:#555; color:white; padding:15px; border-radius:8px;">5</button>
+            <button onclick="press('6')" style="background:#555; color:white; padding:15px; border-radius:8px;">6</button>
+            <button onclick="press('+')" style="background:var(--accent); color:white; padding:15px; border-radius:8px;">+</button>
+            <button onclick="press('1')" style="background:#555; color:white; padding:15px; border-radius:8px;">1</button>
+            <button onclick="press('2')" style="background:#555; color:white; padding:15px; border-radius:8px;">2</button>
+            <button onclick="press('3')" style="background:#555; color:white; padding:15px; border-radius:8px;">3</button>
+            <button onclick="calculate()" style="grid-row: span 2; background:var(--success); color:white; padding:15px; border-radius:8px;">=</button>
+            <button onclick="press('0')" style="grid-column: span 2; background:#555; color:white; padding:15px; border-radius:8px;">0</button>
+            <button onclick="press('.')" style="background:#555; color:white; padding:15px; border-radius:8px;">.</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL HISTÓRICO -->
+<div id="historyModal" class="modal" onclick="this.style.display='none'">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2 style="margin-top:0; color:var(--primary);">Histórico de Cargas</h2>
+        <div id="historyList">
+            <p style="color:#888;">Nenhum romaneio salvo ainda.</p>
+        </div>
+        <button class="btn btn-clear" style="width:100%; margin-top:15px;" onclick="toggleModal('historyModal')">Fechar</button>
+    </div>
+</div>
 
 <div class="container">
-    <div class="app-header">
-        <h1 id="lblMotorista">Art Conferência</h1>
-        <small id="lblVeiculo">Importe um romaneio para começar</small>
+    <div id="driverCard" class="driver-header" style="display: none;">
+        <h1 id="lblMotorista">MOTORISTA</h1>
+        <p id="lblVeiculo" style="margin:5px 0 0 0; font-size:0.9rem; opacity:0.8;">VEÍCULO</p>
     </div>
 
-    <div class="no-print">
-        <div class="button-grid">
-            <button class="btn" style="background:var(--primary)" onclick="document.getElementById('pdfFile').click()">📂 ABRIR</button>
-            <button class="btn" style="background:#6c5ce7" onclick="showHistory()">📜 HISTÓRICO</button>
-            <button class="btn" style="background:var(--success)" onclick="saveToHistory()">💾 SALVAR</button>
-        </div>
-        
-        <div class="tabs" id="tabBar" style="display:none">
-            <button id="btnTabPending" class="tab-btn active" onclick="switchTab('pending')">Faltam (<span id="countPending">0</span>)</button>
-            <button id="btnTabCompleted" class="tab-btn" onclick="switchTab('completed')">Prontos (<span id="countCompleted">0</span>)</button>
+    <div class="header-tools">
+        <div class="tabs" id="tabBar" style="display: none;">
+            <button id="btnTabPending" class="tab-btn active" onclick="switchTab('pending')">Pendentes <span id="countPending">0</span></button>
+            <button id="btnTabCompleted" class="tab-btn" onclick="switchTab('completed')">Concluídos <span id="countCompleted">0</span></button>
         </div>
 
-        <input type="text" id="searchInput" class="search-box" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ddd; margin-bottom:10px; box-sizing:border-box" placeholder="🔍 Buscar produto..." onkeyup="filterView()">
+        <input type="text" id="searchInput" class="search-box" placeholder="🔍 Buscar produto no romaneio..." onkeyup="filterView()">
         
-        <div class="button-grid">
-            <button class="btn" style="background:var(--info)" onclick="window.print()">📄 IMPRIMIR</button>
-            <button class="btn" style="background:var(--danger)" onclick="resetApp()">🗑️ LIMPAR</button>
+        <div class="button-group">
+            <button class="btn btn-upload" onclick="document.getElementById('pdfFile').click()">📂 Abrir PDF</button>
+            <button class="btn btn-history" onclick="showHistory()">📜 Histórico</button>
+            <button class="btn btn-save" onclick="saveToHistory()">💾 Salvar</button>
+            <button class="btn btn-export" onclick="window.print()">📄 Imprimir</button>
+            <button class="btn btn-clear" onclick="resetApp()">🗑️ Limpar</button>
         </div>
         <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
     </div>
 
-    <div id="obsArea" style="display:none; margin-bottom:15px;" class="no-print">
-        <textarea id="txtObs" placeholder="Observações da carga..." style="width:100%; height:60px; border-radius:10px; border:1px solid #ddd; padding:10px; box-sizing:border-box" oninput="saveCurrentState()"></textarea>
+    <div class="obs-container" id="obsArea" style="display: none; margin-bottom:15px;">
+        <textarea id="txtObs" placeholder="Observações da carga..." style="width:100%; height:60px; padding:10px; border-radius:8px; border:1px solid #ddd; border-left:5px solid var(--info); font-family:inherit; box-sizing:border-box;" oninput="saveCurrentState()"></textarea>
     </div>
 
+    <div id="loading" style="display:none; text-align:center; padding:20px; color:var(--accent); font-weight:bold;">⏳ Processando PDF...</div>
     <div id="checklist"></div>
 </div>
 
-<!-- Scripts de lógica (Iguais aos anteriores) + Registro PWA -->
 <script>
-    // Registro do Service Worker para PWA
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-        .then(() => console.log("PWA Ativo!"))
-        .catch(err => console.log("Erro PWA:", err));
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+    let masterData = [];
+    let currentTab = 'pending';
+
+    // --- PERSISTÊNCIA E HISTÓRICO ---
+    function saveCurrentState() {
+        const payload = {
+            masterData,
+            motorista: document.getElementById('lblMotorista').innerText,
+            veiculo: document.getElementById('lblVeiculo').innerText,
+            obs: document.getElementById('txtObs').value
+        };
+        localStorage.setItem('current_romaneio', JSON.stringify(payload));
     }
 
-    // [Toda a sua lógica JavaScript anterior entra aqui...]
-    // (A mesma que inclui parseRomaneio, render, switchTab, LocalStorage, etc.)
-</script>
+    function saveToHistory() {
+        if (masterData.length === 0) return alert("Não há dados para salvar.");
+        
+        const history = JSON.parse(localStorage.getItem('romaneio_history') || '[]');
+        const newItem = {
+            id: Date.now(),
+            date: new Date().toLocaleString(),
+            motorista: document.getElementById('lblMotorista').innerText,
+            veiculo: document.getElementById('lblVeiculo').innerText,
+            obs: document.getElementById('txtObs').value,
+            data: masterData
+        };
+        
+        history.unshift(newItem); // Adiciona no início
+        localStorage.setItem('romaneio_history', JSON.stringify(history));
+        alert("Carga salva no histórico com sucesso!");
+    }
 
+    function showHistory() {
+        const history = JSON.parse(localStorage.getItem('romaneio_history') || '[]');
+        const list = document.getElementById('historyList');
+        list.innerHTML = history.length ? '' : '<p style="color:#888;">Nenhum romaneio salvo.</p>';
+        
+        history.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'history-card';
+            div.innerHTML = `
+                <div class="history-info">
+                    <b>${item.motorista}</b>
+                    <small>${item.date} | ${item.veiculo}</small>
+                </div>
+                <div class="history-actions">
+                    <button class="btn btn-upload" onclick="loadHistoryItem(${item.id})" style="padding:5px 10px;">Ver</button>
+                    <button class="btn btn-clear" onclick="deleteHistoryItem(${item.id})" style="padding:5px 10px;">X</button>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+        toggleModal('historyModal');
+    }
+
+    function loadHistoryItem(id) {
+        const history = JSON.parse(localStorage.getItem('romaneio_history') || '[]');
+        const item = history.find(h => h.id === id);
+        if (item) {
+            if (confirm("Isso substituirá a conferência atual. Continuar?")) {
+                masterData = item.data;
+                document.getElementById('lblMotorista').innerText = item.motorista;
+                document.getElementById('lblVeiculo').innerText = item.veiculo;
+                document.getElementById('txtObs').value = item.obs;
+                document.getElementById('driverCard').style.display = 'block';
+                document.getElementById('obsArea').style.display = 'block';
+                document.getElementById('tabBar').style.display = 'flex';
+                toggleModal('historyModal');
+                render();
+            }
+        }
+    }
+
+    function deleteHistoryItem(id) {
+        if (confirm("Excluir este romaneio do histórico?")) {
+            let history = JSON.parse(localStorage.getItem('romaneio_history') || '[]');
+            history = history.filter(h => h.id !== id);
+            localStorage.setItem('romaneio_history', JSON.stringify(history));
+            showHistory();
+        }
+    }
+
+    // --- CALCULADORA ---
+    let calcIn = "";
+    function toggleModal(id) { const m = document.getElementById(id); m.style.display = (m.style.display === 'flex') ? 'none' : 'flex'; }
+    function press(v) { calcIn += v; document.getElementById('display').value = calcIn; }
+    function clearCalc() { calcIn = ""; document.getElementById('display').value = "0"; }
+    function calculate() { try { calcIn = eval(calcIn).toString(); document.getElementById('display').value = calcIn; } catch { document.getElementById('display').value = "Erro"; calcIn = ""; } }
+
+    // --- PDF E RENDER ---
+    document.getElementById('pdfFile').addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        document.getElementById('loading').style.display = 'block';
+        const reader = new FileReader();
+        reader.onload = async function() {
+            const typedarray = new Uint8Array(this.result);
+            const pdf = await pdfjsLib.getDocument(typedarray).promise;
+            let lines = [];
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const text = await page.getTextContent();
+                let lastY = -1; let line = "";
+                const items = text.items.sort((a, b) => b.transform[5] - a.transform[5] || a.transform[4] - b.transform[4]);
+                items.forEach(item => {
+                    if (lastY !== -1 && Math.abs(item.transform[5] - lastY) > 5) { lines.push(line); line = ""; }
+                    line += item.str + " "; lastY = item.transform[5];
+                });
+                lines.push(line);
+            }
+            parsePDF(lines);
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    function parsePDF(lines) {
+        masterData = []; let current = null;
+        lines.forEach(l => {
+            l = l.trim();
+            if (l.includes("Motorista:")) {
+                const m = l.split("Motorista:")[1].split("Data")[0].trim();
+                document.getElementById('lblMotorista').innerText = m;
+                document.getElementById('driverCard').style.display = 'block';
+                document.getElementById('obsArea').style.display = 'block';
+                document.getElementById('tabBar').style.display = 'flex';
+            }
+            if (l.includes("Veiculo:")) {
+                const v = l.split("Veiculo:")[1].split("Placa")[0].trim();
+                const p = l.includes("Placa:") ? " - " + l.split("Placa:")[1].trim() : "";
+                document.getElementById('lblVeiculo').innerText = v + p;
+            }
+            const prod = l.match(/^(\d{1,5})\s+(.+?)\s+(\d+[,.]?\d*)\s+([a-zA-Z]{2,6})\s+(\d+[,.]\d{4})$/);
+            const del = l.match(/^(\d{6})\s+(\d{2}\/\d{2}\/\d{4})\s+(.*?)\s+(\d+[,.]?\d*)\s+([a-zA-Z]{2,6})\s+([\d.,]+)$/);
+            if (prod) {
+                current = { id: prod[1], name: prod[2].trim(), total: prod[3], unit: prod[4].toUpperCase(), deliveries: [], completed: false };
+                masterData.push(current);
+            } else if (del && current) {
+                current.deliveries.push({ order: del[1], client: del[3].trim(), qty: del[4], unit: del[5].toUpperCase(), checked: false });
+            }
+        });
+        saveCurrentState();
+        render();
+    }
+
+    function render() {
+        const list = document.getElementById('checklist');
+        list.innerHTML = '';
+        document.getElementById('loading').style.display = 'none';
+        masterData.forEach((p, pIdx) => {
+            const group = document.createElement('div');
+            group.className = `product-group ${p.completed ? 'group-checked' : ''}`;
+            group.id = `group-${pIdx}`;
+            group.setAttribute('data-name', p.name.toLowerCase());
+            group.innerHTML = `
+                <div class="product-header" onclick="handleHeaderClick(event, ${pIdx})">
+                    <input type="checkbox" id="pCheck-${pIdx}" ${p.completed ? 'checked' : ''} onchange="toggleParent(${pIdx})">
+                    <div class="prod-info">
+                        <span class="prod-name">${p.id} - ${p.name} <small id="count-${pIdx}"></small></span>
+                        <span class="prod-badge">${p.total} ${p.unit}</span>
+                    </div>
+                </div>
+                <div class="delivery-list">
+                    ${p.deliveries.map((d, dIdx) => `
+                        <div class="delivery-item ${d.checked ? 'item-checked' : ''}" id="item-${pIdx}-${dIdx}">
+                            <input type="checkbox" ${d.checked ? 'checked' : ''} onchange="toggleChild(${pIdx}, ${dIdx})">
+                            <div class="delivery-text">
+                                <span><b style="color:var(--info)">${d.order}</b> ${d.client}</span>
+                                <span style="font-weight:bold">${d.qty} ${d.unit}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
+            list.appendChild(group);
+            updateProdCounter(pIdx);
+        });
+        filterView();
+    }
+
+    function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById('btnTabPending').classList.toggle('active', tab === 'pending');
+        document.getElementById('btnTabCompleted').classList.toggle('active', tab === 'completed');
+        filterView();
+    }
+
+    function filterView() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        let pend = 0, comp = 0;
+        masterData.forEach((p, idx) => {
+            const el = document.getElementById(`group-${idx}`);
+            const match = p.name.toLowerCase().includes(term) && ((currentTab === 'pending' && !p.completed) || (currentTab === 'completed' && p.completed));
+            el.style.display = match ? 'block' : 'none';
+            if (!p.completed) pend++; else comp++;
+        });
+        document.getElementById('countPending').innerText = pend;
+        document.getElementById('countCompleted').innerText = comp;
+    }
+
+    function handleHeaderClick(e, pIdx) { if (e.target.tagName !== 'INPUT') { const cb = document.getElementById(`pCheck-${pIdx}`); cb.checked = !cb.checked; toggleParent(pIdx); } }
+
+    function toggleParent(pIdx) {
+        const val = document.getElementById(`pCheck-${pIdx}`).checked;
+        masterData[pIdx].completed = val;
+        masterData[pIdx].deliveries.forEach(d => d.checked = val);
+        saveCurrentState();
+        render();
+    }
+
+    function toggleChild(pIdx, dIdx) {
+        masterData[pIdx].deliveries[dIdx].checked = !masterData[pIdx].deliveries[dIdx].checked;
+        masterData[pIdx].completed = masterData[pIdx].deliveries.every(d => d.checked);
+        saveCurrentState();
+        render();
+    }
+
+    function updateProdCounter(pIdx) {
+        const chk = masterData[pIdx].deliveries.filter(d => d.checked).length;
+        document.getElementById(`count-${pIdx}`).innerText = `(${chk}/${masterData[pIdx].deliveries.length})`;
+    }
+
+    function resetApp() { if(confirm('Limpar conferência atual?')) { localStorage.removeItem('current_romaneio'); location.reload(); } }
+
+    window.onload = () => {
+        const saved = localStorage.getItem('current_romaneio');
+        if (saved) {
+            const d = JSON.parse(saved);
+            masterData = d.masterData;
+            document.getElementById('lblMotorista').innerText = d.motorista;
+            document.getElementById('lblVeiculo').innerText = d.veiculo;
+            document.getElementById('txtObs').value = d.obs || "";
+            document.getElementById('driverCard').style.display = 'block';
+            document.getElementById('obsArea').style.display = 'block';
+            document.getElementById('tabBar').style.display = 'flex';
+            render();
+        }
+    };
+</script>
 </body>
 </html>
