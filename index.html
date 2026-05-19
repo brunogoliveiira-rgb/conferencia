@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1573/1573145.png">
+    <title>Art Conferência</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <style>
+        /* ESTILOS (Mesmos do anterior com melhorias mobile) */
+        :root { --primary: #2c3e50; --accent: #e67e22; --success: #27ae60; --danger: #e74c3c; --info: #3498db; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        .container { max-width: 900px; margin: 0 auto; background: white; min-height: 100vh; padding: 15px; box-sizing: border-box; }
+        
+        /* Cabeçalho App Style */
+        .app-header { background: var(--primary); color: white; padding: 15px; border-radius: 0 0 15px 15px; margin: -15px -15px 15px -15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .app-header h1 { margin: 0; font-size: 1.2rem; }
+
+        /* Abas Estilo App */
+        .tabs { display: flex; background: #eee; padding: 4px; border-radius: 12px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; border: none; padding: 10px; border-radius: 10px; font-weight: bold; color: #666; background: none; transition: 0.2s; font-size: 0.85rem; }
+        .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        /* Botões Flutuantes e Fixos */
+        .button-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
+        .btn { border: none; padding: 12px 5px; border-radius: 10px; color: white; font-weight: bold; font-size: 0.75rem; cursor: pointer; text-align: center; }
+        
+        /* Restante do CSS anterior mantido para Checklist e Calculadora... */
+        .product-group { border: 1px solid #ddd; border-radius: 12px; margin-bottom: 10px; overflow: hidden; background: white; }
+        .product-header { background: #f9f9f9; padding: 12px; display: flex; align-items: center; border-bottom: 1px solid #eee; }
+        .product-header input { width: 22px; height: 22px; margin-right: 12px; }
+        .prod-info { flex-grow: 1; display: flex; justify-content: space-between; align-items: center; }
+        .delivery-item { display: flex; align-items: center; padding: 10px 10px 10px 45px; border-bottom: 1px solid #f5f5f5; font-size: 0.85rem; }
+        .item-checked { background: #e8f5e9; color: #888; text-decoration: line-through; }
+        
+        /* Calculadora Pop-up */
+        #calcBtn { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: var(--accent); color: white; border: none; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 1000; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+
+        @media print { .no-print { display: none !important; } .container { width: 100%; margin: 0; } }
+    </style>
+</head>
+<body>
+
+<button id="calcBtn" class="no-print" onclick="toggleModal('calcModal')">➕</button>
+
+<div class="container">
+    <div class="app-header">
+        <h1 id="lblMotorista">Art Conferência</h1>
+        <small id="lblVeiculo">Importe um romaneio para começar</small>
+    </div>
+
+    <div class="no-print">
+        <div class="button-grid">
+            <button class="btn" style="background:var(--primary)" onclick="document.getElementById('pdfFile').click()">📂 ABRIR</button>
+            <button class="btn" style="background:#6c5ce7" onclick="showHistory()">📜 HISTÓRICO</button>
+            <button class="btn" style="background:var(--success)" onclick="saveToHistory()">💾 SALVAR</button>
+        </div>
+        
+        <div class="tabs" id="tabBar" style="display:none">
+            <button id="btnTabPending" class="tab-btn active" onclick="switchTab('pending')">Faltam (<span id="countPending">0</span>)</button>
+            <button id="btnTabCompleted" class="tab-btn" onclick="switchTab('completed')">Prontos (<span id="countCompleted">0</span>)</button>
+        </div>
+
+        <input type="text" id="searchInput" class="search-box" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ddd; margin-bottom:10px; box-sizing:border-box" placeholder="🔍 Buscar produto..." onkeyup="filterView()">
+        
+        <div class="button-grid">
+            <button class="btn" style="background:var(--info)" onclick="window.print()">📄 IMPRIMIR</button>
+            <button class="btn" style="background:var(--danger)" onclick="resetApp()">🗑️ LIMPAR</button>
+        </div>
+        <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
+    </div>
+
+    <div id="obsArea" style="display:none; margin-bottom:15px;" class="no-print">
+        <textarea id="txtObs" placeholder="Observações da carga..." style="width:100%; height:60px; border-radius:10px; border:1px solid #ddd; padding:10px; box-sizing:border-box" oninput="saveCurrentState()"></textarea>
+    </div>
+
+    <div id="checklist"></div>
+</div>
+
+<!-- Scripts de lógica (Iguais aos anteriores) + Registro PWA -->
+<script>
+    // Registro do Service Worker para PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+        .then(() => console.log("PWA Ativo!"))
+        .catch(err => console.log("Erro PWA:", err));
+    }
+
+    // [Toda a sua lógica JavaScript anterior entra aqui...]
+    // (A mesma que inclui parseRomaneio, render, switchTab, LocalStorage, etc.)
+</script>
+
+</body>
+</html>

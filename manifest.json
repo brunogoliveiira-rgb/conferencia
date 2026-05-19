@@ -1,0 +1,17 @@
+{
+  "name": "Art Conferência",
+  "short_name": "ArtConf",
+  "description": "Sistema de Conferência de Carga Art Atacadista",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#2c3e50",
+  "theme_color": "#2c3e50",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1573/1573145.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
