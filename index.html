@@ -3,128 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <!-- Configurações PWA -->
     <meta name="theme-color" content="#2c3e50">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="ArtConf">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1573/1573145.png">
 
     <title>Art Conferência</title>
     
-    <!-- Bibliotecas PDF.js -->
+    <!-- Bibliotecas PDF.js (Carregamento robusto) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     
     <style>
-        :root {
-            --primary: #2c3e50;
-            --accent: #e67e22;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --info: #3498db;
-            --bg: #f4f7f6;
-        }
-
-        body { 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            background-color: var(--bg); 
-            margin: 0; 
-            padding: 0; 
-            -webkit-tap-highlight-color: transparent; 
-        }
-        
-        .container { 
-            max-width: 900px; 
-            margin: 0 auto; 
-            background: white; 
-            min-height: 100vh; 
-            padding: 15px; 
-            box-sizing: border-box; 
-        }
-        
-        /* Cabeçalho */
-        .app-header { 
-            background: var(--primary); 
-            color: white; 
-            padding: 12px; 
-            border-radius: 0 0 15px 15px; 
-            margin: -15px -15px 10px -15px; 
-            text-align: center; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-        }
+        :root { --primary: #2c3e50; --accent: #e67e22; --success: #27ae60; --danger: #e74c3c; --info: #3498db; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        .container { max-width: 900px; margin: 0 auto; background: white; min-height: 100vh; padding: 15px; box-sizing: border-box; }
+        .app-header { background: var(--primary); color: white; padding: 12px; border-radius: 0 0 15px 15px; margin: -15px -15px 10px -15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .app-header h1 { margin: 0; font-size: 1.1rem; text-transform: uppercase; }
         .app-header p { margin: 3px 0 0 0; opacity: 0.8; font-size: 0.8rem; }
-
-        /* Abas */
         .tabs { display: flex; background: #eee; padding: 4px; border-radius: 12px; margin-bottom: 15px; }
-        .tab-btn { 
-            flex: 1; border: none; padding: 12px; border-radius: 10px; 
-            font-weight: bold; color: #666; background: none; 
-            transition: 0.2s; font-size: 0.85rem; 
-        }
+        .tab-btn { flex: 1; border: none; padding: 12px; border-radius: 10px; font-weight: bold; color: #666; background: none; transition: 0.2s; font-size: 0.85rem; }
         .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .tab-btn span { background: #ddd; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; margin-left: 5px; }
-
-        /* Botões */
         .button-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
-        .btn { 
-            border: none; padding: 14px 5px; border-radius: 10px; 
-            color: white; font-weight: bold; font-size: 0.75rem; 
-            cursor: pointer; text-align: center; text-transform: uppercase; 
-        }
-        
-        .search-box { 
-            width: 100%; padding: 14px; border: 1px solid #ddd; 
-            border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; 
-            font-size: 1rem; outline: none;
-        }
-
-        /* CAMPO DE OBSERVAÇÃO GRANDE */
-        .obs-container textarea { 
-            width: 100%; 
-            min-height: 120px; 
-            border-radius: 10px; 
-            border: 1px solid #ddd; 
-            padding: 12px; 
-            box-sizing: border-box; 
-            border-left: 8px solid var(--info); 
-            font-family: inherit; 
-            margin-bottom: 15px;
-            font-size: 1rem;
-            resize: vertical;
-        }
-
-        /* Checklist Itens */
+        .btn { border: none; padding: 14px 5px; border-radius: 10px; color: white; font-weight: bold; font-size: 0.75rem; cursor: pointer; text-align: center; text-transform: uppercase; }
+        .search-box { width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; font-size: 1rem; outline: none; }
+        .obs-container textarea { width: 100%; min-height: 120px; border-radius: 10px; border: 1px solid #ddd; padding: 12px; box-sizing: border-box; border-left: 8px solid var(--info); font-family: inherit; margin-bottom: 15px; font-size: 1rem; }
         .product-group { border: 1px solid #ddd; border-radius: 12px; margin-bottom: 10px; overflow: hidden; background: white; }
         .product-header { background: #f9f9f9; padding: 14px; display: flex; align-items: center; border-bottom: 1px solid #eee; cursor: pointer; }
         .product-header input { width: 24px; height: 24px; margin-right: 12px; }
         .prod-info { flex-grow: 1; display: flex; justify-content: space-between; align-items: center; }
         .prod-name { font-weight: bold; font-size: 0.95rem; color: var(--primary); }
         .prod-badge { background: var(--accent); color: white; padding: 3px 12px; border-radius: 10px; font-size: 0.8rem; }
-
         .delivery-item { display: flex; align-items: center; padding: 12px 10px 12px 45px; border-bottom: 1px solid #f5f5f5; font-size: 0.9rem; }
+        .delivery-item input { width: 20px; height: 20px; margin-right: 12px; }
         .item-checked { background: #e8f5e9; }
         .item-checked .delivery-text { text-decoration: line-through; opacity: 0.5; }
         .group-checked { border: 2.5px solid var(--success); }
-
-        /* Calculadora */
-        #calcBtn { 
-            position: fixed; bottom: 25px; right: 25px; 
-            width: 65px; height: 65px; border-radius: 50%; 
-            background: var(--accent); color: white; border: none; 
-            font-size: 28px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); 
-            z-index: 1000; display: flex; align-items: center; justify-content: center; 
-        }
-        
-        /* Modais */
+        #calcBtn { position: fixed; bottom: 25px; right: 25px; width: 65px; height: 65px; border-radius: 50%; background: var(--accent); color: white; border: none; font-size: 28px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 1000; display: flex; align-items: center; justify-content: center; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 450px; box-sizing: border-box; }
-
-        /* Itens do Histórico */
         .history-item { border-bottom: 1px solid #eee; padding: 12px 0; display: flex; justify-content: space-between; align-items: center; }
-        .history-btn-group { display: flex; gap: 8px; }
         .btn-mini { padding: 8px 12px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 0.75rem; }
 
         @media print {
@@ -138,7 +57,6 @@
 
 <button id="calcBtn" class="no-print" onclick="toggleModal('calcModal')">➕</button>
 
-<!-- MODAL CALCULADORA -->
 <div id="calcModal" class="modal" onclick="this.style.display='none'">
     <div class="modal-content" onclick="event.stopPropagation()" style="background:#333; width: 300px; border-radius: 20px;">
         <input type="text" id="calcDisplay" style="width:100%; height:60px; text-align:right; font-size:28px; margin-bottom:15px; padding:10px; border-radius:10px; border:none; box-sizing:border-box;" disabled value="0">
@@ -164,7 +82,6 @@
     </div>
 </div>
 
-<!-- MODAL HISTÓRICO -->
 <div id="historyModal" class="modal" onclick="this.style.display='none'">
     <div class="modal-content" onclick="event.stopPropagation()">
         <h2 style="margin:0 0 15px 0; font-size:1.2rem; color:var(--primary);">Histórico de Cargas</h2>
@@ -176,7 +93,7 @@
 <div class="container">
     <div class="app-header">
         <h1 id="lblMotorista">Art Conferência</h1>
-        <p id="lblVeiculo">Abra um romaneio para começar</p>
+        <p id="lblVeiculo">Selecione o PDF</p>
     </div>
 
     <div class="no-print">
@@ -185,14 +102,11 @@
             <button class="btn" style="background:#6c5ce7" onclick="showHistory()">📜 HIST</button>
             <button class="btn" style="background:var(--success)" onclick="saveToHistory()">💾 SALVAR</button>
         </div>
-        
         <div class="tabs" id="tabBar" style="display:none">
             <button id="btnTabPending" class="tab-btn active" onclick="switchTab('pending')">FALTAM <span id="countPending">0</span></button>
             <button id="btnTabCompleted" class="tab-btn" onclick="switchTab('completed')">PRONTOS <span id="countCompleted">0</span></button>
         </div>
-
         <input type="text" id="searchInput" class="search-box" placeholder="🔍 Buscar produto..." onkeyup="filterView()">
-        
         <div class="button-grid">
             <button class="btn" style="background:var(--info)" onclick="window.print()">📄 RELATÓRIO</button>
             <button class="btn" style="background:var(--danger)" onclick="resetApp()">🗑️ LIMPAR</button>
@@ -201,7 +115,7 @@
     </div>
 
     <div id="obsArea" style="display:none;" class="no-print">
-        <textarea id="txtObs" placeholder="Anotações da carga (faltas, trocas, avisos)..." oninput="saveCurrentState()"></textarea>
+        <textarea id="txtObs" placeholder="Anotações da carga..." oninput="saveCurrentState()"></textarea>
     </div>
 
     <div id="loading" style="display:none; text-align:center; padding:20px; color:var(--accent); font-weight:bold;">⏳ Lendo PDF...</div>
@@ -209,8 +123,17 @@
 </div>
 
 <script>
+    // --- CONFIGURAÇÃO CRÍTICA DO PDF.JS PARA PWA ---
     const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    // Forçamos o worker a carregar do CDN mas sincronizado com a biblioteca principal
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+    // Registro PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log("PWA Ativo"))
+        .catch(err => console.log("Erro PWA", err));
+    }
 
     let masterData = [];
     let currentTab = 'pending';
@@ -219,27 +142,36 @@
     document.getElementById('pdfFile').addEventListener('change', async function(e) {
         const file = e.target.files[0];
         if (!file) return;
+        
         document.getElementById('loading').style.display = 'block';
+        document.getElementById('checklist').innerHTML = '';
+
         const reader = new FileReader();
         reader.onload = async function() {
-            const typedarray = new Uint8Array(this.result);
             try {
-                const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                const typedarray = new Uint8Array(this.result);
+                const loadingTask = pdfjsLib.getDocument({data: typedarray});
+                const pdf = await loadingTask.promise;
+                
                 let fullLines = [];
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const text = await page.getTextContent();
                     let lastY = -1; let line = "";
                     const items = text.items.sort((a, b) => b.transform[5] - a.transform[5] || a.transform[4] - b.transform[4]);
+                    
                     items.forEach(item => {
-                        if (lastY !== -1 && Math.abs(item.transform[5] - lastY) > 5) { fullLines.push(line); line = ""; }
+                        if (lastY !== -1 && Math.abs(item.transform[5] - lastY) > 5) {
+                            fullLines.push(line); line = "";
+                        }
                         line += item.str + " "; lastY = item.transform[5];
                     });
                     fullLines.push(line);
                 }
                 parsePDFData(fullLines);
             } catch (err) {
-                alert("Erro: " + err.message);
+                alert("Erro ao processar PDF. Tente abrir no navegador e depois salvar novamente.");
+                console.error(err);
                 document.getElementById('loading').style.display = 'none';
             }
         };
@@ -342,18 +274,17 @@
         if(el) el.innerText = `(${chk}/${masterData[pIdx].deliveries.length})`;
     }
 
-    // --- PERSISTÊNCIA E HISTÓRICO ---
     function saveCurrentState() {
         const payload = { masterData, motorista: document.getElementById('lblMotorista').innerText, veiculo: document.getElementById('lblVeiculo').innerText, obs: document.getElementById('txtObs').value };
         localStorage.setItem('current_romaneio', JSON.stringify(payload));
     }
 
     function saveToHistory() {
-        if (!masterData.length) return alert("Sem dados.");
+        if (!masterData.length) return alert("Vazio.");
         const history = JSON.parse(localStorage.getItem('romaneio_history') || '[]');
         history.unshift({ id: Date.now(), date: new Date().toLocaleString(), motorista: document.getElementById('lblMotorista').innerText, veiculo: document.getElementById('lblVeiculo').innerText, data: masterData, obs: document.getElementById('txtObs').value });
         localStorage.setItem('romaneio_history', JSON.stringify(history));
-        alert("Salvo no histórico!");
+        alert("Salvo!");
     }
 
     function showHistory() {
@@ -385,7 +316,7 @@
     }
 
     function deleteHistoryItem(id) {
-        if (confirm("Excluir este item do histórico permanentemente?")) {
+        if (confirm("Excluir?")) {
             let history = JSON.parse(localStorage.getItem('romaneio_history') || '[]');
             history = history.filter(h => h.id !== id);
             localStorage.setItem('romaneio_history', JSON.stringify(history));
@@ -393,14 +324,13 @@
         }
     }
 
-    // --- CALCULADORA ---
     let calcStr = "";
     function toggleModal(id) { document.getElementById(id).style.display = (document.getElementById(id).style.display === 'flex') ? 'none' : 'flex'; }
     function pressCalc(v) { calcStr += v; document.getElementById('calcDisplay').value = calcStr; }
     function clearCalc() { calcStr = ""; document.getElementById('calcDisplay').value = "0"; }
     function executeCalc() { try { calcStr = eval(calcStr).toString(); document.getElementById('calcDisplay').value = calcStr; } catch { alert("Erro"); clearCalc(); } }
 
-    function resetApp() { if(confirm('Limpar tudo?')) { localStorage.removeItem('current_romaneio'); location.reload(); } }
+    function resetApp() { if(confirm('Limpar?')) { localStorage.removeItem('current_romaneio'); location.reload(); } }
 
     window.onload = () => {
         const saved = localStorage.getItem('current_romaneio');
