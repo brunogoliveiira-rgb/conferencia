@@ -44,10 +44,15 @@
         .tab-btn span { background: #ddd; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; margin-left: 5px; }
 
         /* Botões e Campos de Busca */
-        .button-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+        .button-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
         .btn { border: none; padding: 14px 5px; border-radius: 10px; color: white; font-weight: bold; font-size: 0.75rem; cursor: pointer; text-align: center; text-transform: uppercase; }
+        
         .search-container { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
-        .search-box { width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 0.95rem; outline: none; }
+        .input-wrapper { position: relative; flex: 1; display: flex; align-items: center; }
+        .search-box { width: 100%; padding: 14px 38px 14px 14px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 0.95rem; outline: none; }
+        
+        .clear-search-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 16px; cursor: pointer; color: #95a5a6; padding: 5px; font-weight: bold; }
+        .clear-search-btn:hover { color: var(--danger); }
 
         /* OBSERVAÇÃO GRANDE */
         .obs-container textarea { width: 100%; min-height: 120px; border-radius: 10px; border: 1px solid #ddd; padding: 12px; box-sizing: border-box; border-left: 8px solid var(--info); font-family: inherit; margin-bottom: 15px; font-size: 1rem; }
@@ -70,7 +75,7 @@
         .group-has-note { border: 2.5px solid var(--warning) !important; }
 
         .product-note-display { display: inline-block; background: #fef9e7; border: 1px dashed var(--warning); color: #d68910; font-size: 0.8rem; padding: 3px 8px; border-radius: 8px; margin-top: 2px; width: 100%; font-weight: normal; }
-        .highlight-client { background-color: #d4efdf !important; border-radius: 4px; padding: 2px 4px; font-weight: bold; color: #145a32; }
+        .highlight { background-color: #d4efdf !important; border-radius: 4px; padding: 2px 4px; font-weight: bold; color: #145a32; }
 
         #calcBtn { position: fixed; bottom: 25px; right: 25px; width: 65px; height: 65px; border-radius: 50%; background: var(--accent); color: white; border: none; font-size: 28px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 1000; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; }
@@ -95,7 +100,7 @@
             <button onclick="toggleCalcHistory()" style="background:var(--info); color:white; border:none; padding:5px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer;">📜 Histórico</button>
         </div>
         
-        <input type="text" id="calcDisplay" style="width:100%; height:50px; text-align:right; font-size:24px; margin-bottom:10px; padding:10px; border:none; box-sizing:border-box; border-radius: 8px;" disabled value="0">
+        <input type="text" id="calcDisplay" style="width:100%; height:50px; text-align:right; font-size:24px; margin-bottom:10px; padding:10px; border:none; box-sizing:border-box; border-radius: 8px; background: #fff; color: #000; font-weight: bold;" disabled value="0">
         
         <div id="calcHistoryBox" style="display:none; background:#222; max-height: 100px; overflow-y: auto; margin-bottom: 10px; padding: 8px; border-radius: 8px; color: #aaa; font-size: 0.8rem;">
             <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
@@ -167,10 +172,10 @@
 <div id="newProdModal" class="modal" onclick="this.style.display='none'">
     <div class="modal-content" onclick="event.stopPropagation()">
         <h3 style="margin-top:0; color:var(--primary); font-size: 1.1rem;">Adicionar Novo Produto</h3>
-        <input type="text" id="newProdId" class="search-box" placeholder="Código (ex: 12345)" style="margin-bottom:8px;">
-        <input type="text" id="newProdName" class="search-box" placeholder="Nome do Produto" style="margin-bottom:8px;">
-        <input type="text" id="newProdTotal" class="search-box" placeholder="Quantidade Total (ex: 10)" style="margin-bottom:8px;">
-        <input type="text" id="newProdUnit" class="search-box" placeholder="Unidade (ex: UN, KG)" style="margin-bottom:12px;">
+        <input type="text" id="newProdId" class="search-box" placeholder="Código (ex: 12345)" style="margin-bottom:8px; width:100%;">
+        <input type="text" id="newProdName" class="search-box" placeholder="Nome do Produto" style="margin-bottom:8px; width:100%;">
+        <input type="text" id="newProdTotal" class="search-box" placeholder="Quantidade Total (ex: 10)" style="margin-bottom:8px; width:100%;">
+        <input type="text" id="newProdUnit" class="search-box" placeholder="Unidade (ex: UN, KG)" style="margin-bottom:12px; width:100%;">
         <div style="display:flex; gap:8px;">
             <button class="btn" style="background:var(--success); flex:1;" onclick="saveNewProduct()">Salvar</button>
             <button class="btn" style="background:#95a5a6; flex:1;" onclick="toggleModal('newProdModal')">Cancelar</button>
@@ -182,10 +187,10 @@
 <div id="addDeliveryModal" class="modal" onclick="this.style.display='none'">
     <div class="modal-content" onclick="event.stopPropagation()">
         <h3 style="margin-top:0; color:var(--primary); font-size: 1.1rem;">Incluir Entrega para Cliente</h3>
-        <input type="text" id="newDelOrder" class="search-box" placeholder="Nº do Pedido (6 dígitos)" style="margin-bottom:8px;">
-        <input type="text" id="newDelClient" class="search-box" placeholder="Nome do Cliente" style="margin-bottom:8px;">
-        <input type="text" id="newDelQty" class="search-box" placeholder="Quantidade" style="margin-bottom:8px;">
-        <input type="text" id="newDelUnit" class="search-box" placeholder="Unidade (ex: UN)" style="margin-bottom:12px;">
+        <input type="text" id="newDelOrder" class="search-box" placeholder="Nº do Pedido (6 dígitos)" style="margin-bottom:8px; width:100%;">
+        <input type="text" id="newDelClient" class="search-box" placeholder="Nome do Cliente" style="margin-bottom:8px; width:100%;">
+        <input type="text" id="newDelQty" class="search-box" placeholder="Quantidade" style="margin-bottom:8px; width:100%;">
+        <input type="text" id="newDelUnit" class="search-box" placeholder="Unidade (ex: UN)" style="margin-bottom:12px; width:100%;">
         <div style="display:flex; gap:8px;">
             <button class="btn" style="background:var(--success); flex:1;" onclick="saveNewDelivery()">Incluir</button>
             <button class="btn" style="background:#95a5a6; flex:1;" onclick="toggleModal('addDeliveryModal')">Cancelar</button>
@@ -225,7 +230,6 @@
         <div class="button-grid">
             <button class="btn" style="background:var(--primary)" onclick="document.getElementById('pdfFile').click()">📂 PDF</button>
             <button class="btn" style="background:#6c5ce7" onclick="showHistory()">📜 HIST</button>
-            <button class="btn" style="background:var(--success)" onclick="saveToHistory()">💾 SALVAR</button>
         </div>
         
         <div class="tabs" id="tabBar" style="display:none">
@@ -234,24 +238,32 @@
         </div>
 
         <div class="search-container">
-            <input type="text" id="searchProductInput" class="search-box" placeholder="🔍 Buscar produto..." onkeyup="filterView()">
-            <button class="btn" style="background:#7f8c8d; padding: 14px 12px;" onclick="undoLastAction()" title="Desfazer última alteração">↩️</button>
+            <div class="input-wrapper">
+                <input type="text" id="searchProductInput" class="search-box" placeholder="🔍 Buscar produto..." oninput="sanitizeAndFilter(this); render()">
+                <button type="button" class="clear-search-btn" onclick="clearSearchField('searchProductInput')">✕</button>
+            </div>
+            <button class="btn" style="background:#7f8c8d; padding: 14px 12px; width: auto;" onclick="undoLastAction()" title="Desfazer última alteração">↩️</button>
         </div>
         
         <div class="search-container">
-            <input type="text" id="searchClientInput" class="search-box" placeholder="👤 Buscar por nome do cliente ou pedido..." onkeyup="filterView()">
+            <div class="input-wrapper">
+                <input type="text" id="searchClientInput" class="search-box" placeholder="👤 Buscar por nome do cliente ou pedido..." oninput="sanitizeAndFilter(this); render()">
+                <button type="button" class="clear-search-btn" onclick="clearSearchField('searchClientInput')">✕</button>
+            </div>
         </div>
         
         <div class="button-grid">
             <button class="btn" style="background:var(--accent)" onclick="openNewProductModal()">➕ PRODUTO</button>
             <button class="btn" style="background:var(--info)" onclick="window.print()">📄 RELATÓRIO</button>
-            <button class="btn" style="background:var(--danger)" onclick="resetApp()">🗑️ LIMPAR</button>
+        </div>
+        <div style="margin-bottom: 12px;">
+            <button class="btn" style="background:var(--danger); width: 100%;" onclick="resetApp()">🗑️ LIMPAR TUDO</button>
         </div>
         <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
     </div>
 
     <div id="obsArea" style="display:none;" class="no-print">
-        <textarea id="txtObs" placeholder="Anotações da carga (faltas, trocas, avisos)..." oninput="saveCurrentState()"></textarea>
+        <textarea id="txtObs" placeholder="Anotações da carga (faltas, trocas, avisos)..." oninput="saveCurrentState(); checkAndAutoSaveHistory();"></textarea>
     </div>
 
     <div id="loading" style="display:none; text-align:center; padding:20px; color:var(--accent); font-weight:bold;">⏳ Lendo PDF...</div>
@@ -268,9 +280,34 @@
 
     let masterData = [];
     let currentTab = 'pending';
-    let currentHistoryTab = 'pending'; // Aba ativa do histórico
+    let currentHistoryTab = 'pending';
     let selectedProductIdx = null;
     let actionHistory = [];
+
+    // Corrige automaticamente o bug do espaço indesejado no início da digitação
+    function sanitizeAndFilter(input) {
+        if (input.value.startsWith(' ')) {
+            input.value = input.value.trimStart();
+        }
+    }
+
+    function clearSearchField(elementId) {
+        const el = document.getElementById(elementId);
+        el.value = '';
+        render();
+        el.focus();
+    }
+
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function highlightText(text, term) {
+        if (!term || term.trim() === "") return text;
+        const escapedTerm = escapeRegExp(term.trim());
+        const regex = new RegExp(`(${escapedTerm})`, 'gi');
+        return text.replace(regex, '<span class="highlight">$1</span>');
+    }
 
     function pushUndoState() {
         const currentState = JSON.stringify({
@@ -293,6 +330,7 @@
         document.getElementById('lblVeiculo').innerText = lastState.veiculo;
         document.getElementById('txtObs').value = lastState.obs;
         saveCurrentState();
+        checkAndAutoSaveHistory();
         render();
         alert("Última alteração desfeita com sucesso!");
     }
@@ -363,7 +401,7 @@
         document.getElementById('obsArea').style.display = 'block';
         document.getElementById('tabBar').style.display = 'flex';
         saveCurrentState(); 
-        checkAndAutoSaveHistory(); // Atualiza histórico se já existir
+        checkAndAutoSaveHistory(); 
         render();
     }
 
@@ -373,6 +411,7 @@
         list.innerHTML = '';
         document.getElementById('loading').style.display = 'none';
         
+        const termProd = document.getElementById('searchProductInput').value.toLowerCase().trim();
         const termClient = document.getElementById('searchClientInput').value.toLowerCase().trim();
 
         masterData.forEach((p, pIdx) => {
@@ -390,12 +429,15 @@
             
             const noteDisplay = (p.note && p.note.trim() !== "") ? `<div class="product-note-display"><b>Nota:</b> ${p.note}</div>` : '';
 
+            let prodTitleText = `${p.id} - ${p.name}`;
+            let highlightedProdTitle = highlightText(prodTitleText, termProd);
+
             group.innerHTML = `
                 <div class="product-header" onclick="handleHeaderClick(event, ${pIdx})">
                     <input type="checkbox" id="pCheck-${pIdx}" ${p.completed ? 'checked' : ''} onchange="toggleParent(${pIdx})">
                     <div class="prod-info">
                         <div style="flex-grow: 1;">
-                            <span class="prod-name">${p.id} - ${p.name}</span>
+                            <span class="prod-name">${highlightedProdTitle}</span>
                             ${noteDisplay}
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px;">
@@ -407,14 +449,12 @@
                 <div class="delivery-list">
                     ${p.deliveries.map((d, dIdx) => {
                         let clientText = `${d.order} -${d.client}`;
-                        if (termClient !== "" && (d.client.toLowerCase().includes(termClient) || d.order.includes(termClient))) {
-                            clientText = `<span class="highlight-client">${d.order} -${d.client}</span>`;
-                        }
+                        let highlightedClientText = highlightText(clientText, termClient);
                         return `
                         <div class="delivery-item ${d.checked ? 'item-checked' : ''}" id="item-${pIdx}-${dIdx}">
                             <input type="checkbox" ${d.checked ? 'checked' : ''} onchange="toggleChild(${pIdx},${dIdx})">
-                            <div class="delivery-text">
-                                <span>${clientText}</span>
+                            <div class="delivery-text" style="display: flex; justify-content: space-between; width: 100%; padding-right: 10px;">
+                                <span>${highlightedClientText}</span>
                                 <span style="font-weight:bold">${d.qty}${d.unit}</span>
                             </div>
                         </div>`;
@@ -424,7 +464,7 @@
             updateProdCounter(pIdx);
         });
         filterView();
-        checkAndAutoSaveHistory(); // Atualiza o status no histórico em tempo real
+        checkAndAutoSaveHistory();
     }
 
     function openContext(e, pIdx) {
@@ -442,8 +482,8 @@
     }
 
     function filterView() {
-        const termProd = document.getElementById('searchProductInput').value.toLowerCase();
-        const termClient = document.getElementById('searchClientInput').value.toLowerCase();
+        const termProd = document.getElementById('searchProductInput').value.toLowerCase().trim();
+        const termClient = document.getElementById('searchClientInput').value.toLowerCase().trim();
         let pend = 0, comp = 0;
 
         masterData.forEach((p, idx) => {
@@ -464,12 +504,8 @@
         document.getElementById('countCompleted').innerText = comp;
     }
 
-    document.getElementById('searchClientInput').addEventListener('input', () => {
-        render();
-    });
-
     function handleHeaderClick(e, pIdx) { 
-        if (e.target.tagName !== 'INPUT') { 
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') { 
             const cb = document.getElementById(`pCheck-${pIdx}`); 
             cb.checked = !cb.checked; 
             toggleParent(pIdx); 
@@ -490,7 +526,9 @@
         const val = document.getElementById(`pCheck-${pIdx}`).checked;
         prod.completed = val;
         prod.deliveries.forEach(d => d.checked = val);
-        saveCurrentState(); render();
+        saveCurrentState(); 
+        checkAndAutoSaveHistory();
+        render();
     }
 
     function toggleChild(pIdx, dIdx) {
@@ -505,7 +543,9 @@
             prod.completed = allChecked;
         }
         
-        saveCurrentState(); render();
+        saveCurrentState(); 
+        checkAndAutoSaveHistory();
+        render();
     }
 
     function updateProdCounter(pIdx) {
@@ -543,6 +583,7 @@
 
         toggleModal('newProdModal');
         saveCurrentState();
+        checkAndAutoSaveHistory();
         render();
         alert("Produto adicionado com sucesso!");
     }
@@ -554,6 +595,7 @@
             masterData.splice(selectedProductIdx, 1);
             toggleModal('contextModal');
             saveCurrentState();
+            checkAndAutoSaveHistory();
             render();
         }
     }
@@ -588,6 +630,7 @@
 
         toggleModal('addDeliveryModal');
         saveCurrentState();
+        checkAndAutoSaveHistory();
         render();
         alert("Cliente/Entrega adicionada e total recalculado!");
     }
@@ -607,6 +650,7 @@
         if (noteText) masterData[selectedProductIdx].completed = false;
         toggleModal('noteModal');
         saveCurrentState();
+        checkAndAutoSaveHistory();
         render();
         alert("Nota salva com sucesso!");
     }
@@ -617,6 +661,7 @@
         masterData[selectedProductIdx].note = "";
         toggleModal('noteModal');
         saveCurrentState();
+        checkAndAutoSaveHistory();
         render();
         alert("Nota removida.");
     }
@@ -645,6 +690,7 @@
             masterData[pIdx].deliveries.splice(dIdx, 1);
             recalculateProductTotal(pIdx);
             saveCurrentState();
+            checkAndAutoSaveHistory();
             openManageDeliveriesModal(); 
             render();
         }
@@ -661,15 +707,14 @@
         return masterData.every(p => p.completed && (!p.note || p.note.trim() === ""));
     }
 
-    function saveToHistory() {
-        if (!masterData.length) return alert("Sem dados para salvar.");
+    function checkAndAutoSaveHistory() {
+        if (!masterData.length) return;
         let history = JSON.parse(localStorage.getItem('romaneio_history') || '[]');
         const motoristaAtual = document.getElementById('lblMotorista').innerText.trim();
         const veiculoAtual = document.getElementById('lblVeiculo').innerText.trim();
 
-        let indexExistente = history.findIndex(item => item.motorista.trim() === motoristaAtual && item.veiculo.trim() === veiculoAtual);
-
         const isCompleted = isRomaneioCompleted100();
+        let indexExistente = history.findIndex(item => item.motorista.trim() === motoristaAtual && item.veiculo.trim() === veiculoAtual);
 
         const romaneioData = {
             id: indexExistente !== -1 ? history[indexExistente].id : Date.now(),
@@ -683,28 +728,11 @@
 
         if (indexExistente !== -1) {
             history[indexExistente] = romaneioData;
-            alert(isCompleted ? "Romaneio 100% completo movido para a pasta de Concluídos!" : "Conferência atualizada no histórico!");
         } else {
             history.unshift(romaneioData);
-            alert(isCompleted ? "Romaneio 100% completo salvo na pasta de Concluídos!" : "Nova conferência salva no histórico!");
         }
 
         localStorage.setItem('romaneio_history', JSON.stringify(history));
-    }
-
-    function checkAndAutoSaveHistory() {
-        if (!masterData.length) return;
-        let history = JSON.parse(localStorage.getItem('romaneio_history') || '[]');
-        const motoristaAtual = document.getElementById('lblMotorista').innerText.trim();
-        const veiculoAtual = document.getElementById('lblVeiculo').innerText.trim();
-
-        let indexExistente = history.findIndex(item => item.motorista.trim() === motoristaAtual && item.veiculo.trim() === veiculoAtual);
-        if (indexExistente !== -1) {
-            history[indexExistente].data = masterData;
-            history[indexExistente].obs = document.getElementById('txtObs').value;
-            history[indexExistente].completed100 = isRomaneioCompleted100();
-            localStorage.setItem('romaneio_history', JSON.stringify(history));
-        }
     }
 
     function switchHistoryTab(tab) {
