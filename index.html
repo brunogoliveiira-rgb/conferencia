@@ -137,6 +137,19 @@
     </div>
 </div>
 
+<!-- MODAL ESCOLHA DE MODO DE IMPORTAÇÃO (MÚLTIPLOS PDFs) -->
+<div id="importModeModal" class="modal" onclick="this.style.display='none'">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 style="margin-top:0; color:var(--primary); font-size: 1.1rem;">Modo de Importação de PDFs</h3>
+        <p style="font-size:0.9rem; color:#666;">Você selecionou <span id="lblNumFiles">0</span> arquivos PDF. Como deseja importá-los?</p>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+            <button class="btn" style="background:var(--info); padding: 14px;" onclick="executeImportMode('consolidate')">🔗 Consolidar todos na mesma tela</button>
+            <button class="btn" style="background:var(--success); padding: 14px;" onclick="executeImportMode('separate')">📁 Salvar em Romaneios Separados (Histórico)</button>
+            <button class="btn" style="background:#95a5a6; padding: 12px;" onclick="toggleModal('importModeModal')">Cancelar</button>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL HISTÓRICO DE CARGAS COM PASTAS/ABAS -->
 <div id="historyModal" class="modal" onclick="this.style.display='none'">
     <div class="modal-content" onclick="event.stopPropagation()">
@@ -228,7 +241,7 @@
 
     <div class="no-print">
         <div class="button-grid">
-            <button class="btn" style="background:var(--primary)" onclick="document.getElementById('pdfFile').click()">📂 PDF</button>
+            <button class="btn" style="background:var(--primary)" onclick="document.getElementById('pdfFile').click()">📂 IMPORTAR PDFs</button>
             <button class="btn" style="background:#6c5ce7" onclick="showHistory()">📜 HIST</button>
         </div>
         
@@ -259,14 +272,14 @@
         <div style="margin-bottom: 12px;">
             <button class="btn" style="background:var(--danger); width: 100%;" onclick="resetApp()">🗑️ LIMPAR TUDO</button>
         </div>
-        <input type="file" id="pdfFile" accept="application/pdf" style="display:none">
+        <input type="file" id="pdfFile" accept="application/pdf" multiple style="display:none">
     </div>
 
     <div id="obsArea" style="display:none;" class="no-print">
         <textarea id="txtObs" placeholder="Anotações da carga (faltas, trocas, avisos)..." oninput="saveCurrentState(); checkAndAutoSaveHistory();"></textarea>
     </div>
 
-    <div id="loading" style="display:none; text-align:center; padding:20px; color:var(--accent); font-weight:bold;">⏳ Lendo PDF...</div>
+    <div id="loading" style="display:none; text-align:center; padding:20px; color:var(--accent); font-weight:bold;">⏳ Lendo PDFs...</div>
     <div id="checklist"></div>
 </div>
 
@@ -283,8 +296,8 @@
     let currentHistoryTab = 'pending';
     let selectedProductIdx = null;
     let actionHistory = [];
+    let pendingFilesArray = null;
 
-    // Corrige automaticamente o bug do espaço indesejado no início da digitação
     function sanitizeAndFilter(input) {
         if (input.value.startsWith(' ')) {
             input.value = input.value.trimStart();
@@ -352,57 +365,189 @@
         prod.total = isDecimal ? soma.toFixed(4).replace('.', ',') : soma.toString();
     }
 
-    // --- LEITURA DE PDF ---
-    document.getElementById('pdfFile').addEventListener('change', async function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        document.getElementById('loading').style.display = 'block';
-        const reader = new FileReader();
-        reader.onload = async function() {
-            const typedarray = new Uint8Array(this.result);
-            try {
-                const pdf = await pdfjsLib.getDocument({data: typedarray}).promise;
-                let fullLines = [];
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const page = await pdf.getPage(i);
-                    const text = await page.getTextContent();
-                    let lastY = -1; let line = "";
-                    const items = text.items.sort((a, b) => b.transform[5] - a.transform[5] || a.transform[4] - b.transform[4]);
-                    items.forEach(item => {
-                        if (lastY !== -1 && Math.abs(item.transform[5] - lastY) > 5) { fullLines.push(line); line = ""; }
-                        line += item.str + " "; lastY = item.transform[5];
-                    });
-                    fullLines.push(line);
-                }
-                pushUndoState();
-                parsePDFData(fullLines);
-            } catch (err) { alert("Erro ao ler PDF"); document.getElementById('loading').style.display = 'none'; }
-        };
-        reader.readAsArrayBuffer(file);
-    });
+    function recalculateProductTotalDirect(prod) {
+        let soma = 0;
+        let isDecimal = false;
 
-    function parsePDFData(lines) {
-        masterData = []; let current = null;
-        lines.forEach(l => {
-            l = l.trim();
-            if (l.includes("Motorista:")) document.getElementById('lblMotorista').innerText = l.split("Motorista:")[1].split("Data")[0].trim();
-            if (l.includes("Veiculo:")) document.getElementById('lblVeiculo').innerText = l.split("Veiculo:")[1].split("Placa")[0].trim();
+        prod.deliveries.forEach(d => {
+            let val = parseFloat(d.qty.toString().replace(',', '.'));
+            if (!isNaN(val)) {
+                soma += val;
+                if (d.qty.toString().includes(',') || d.qty.toString().includes('.')) {
+                    isDecimal = true;
+                }
+            }
+        });
+        prod.total = isDecimal ? soma.toFixed(4).replace('.', ',') : soma.toString();
+    }
+
+    async function parsePDFFile(file) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({data: new Uint8Array(arrayBuffer)}).promise;
+        let fileLines = [];
+
+        for (let p = 1; p <= pdf.numPages; p++) {
+            const page = await pdf.getPage(p);
+            const text = await page.getTextContent();
+            let lastY = -1; let line = "";
+            const items = text.items.sort((a, b) => b.transform[5] - a.transform[5] || a.transform[4] - b.transform[4]);
+            items.forEach(item => {
+                if (lastY !== -1 && Math.abs(item.transform[5] - lastY) > 5) { 
+                    fileLines.push(line.trim()); 
+                    line = ""; 
+                }
+                line += item.str + " "; 
+                lastY = item.transform[5];
+            });
+            fileLines.push(line.trim());
+        }
+
+        let motorista = "Motorista não identificado";
+        let veiculo = "Veículo não identificado";
+        let fileMasterData = [];
+        let current = null;
+
+        fileLines.forEach(l => {
+            if (l.includes("Motorista:")) {
+                let parts = l.split("Motorista:")[1];
+                if (parts.includes("Data")) parts = parts.split("Data")[0];
+                if (parts.trim()) motorista = parts.trim();
+            }
+            if (l.includes("Veiculo:")) {
+                let parts = l.split("Veiculo:")[1];
+                if (parts.includes("Placa")) parts = parts.split("Placa")[0];
+                if (parts.trim()) veiculo = parts.trim();
+            }
 
             const prod = l.match(/^(\d{1,5})\s+(.+?)\s+(\d+[,.]?\d*)\s+([a-zA-Z]{2,6})\s+(\d+[,.]\d{4})$/);
             const del = l.match(/^(\d{6})\s+(\d{2}\/\d{2}\/\d{4})\s+(.*?)\s+(\d+[,.]?\d*)\s+([a-zA-Z]{2,6})\s+([\d.,]+)$/);
 
             if (prod) {
                 current = { id: prod[1], name: prod[2].trim(), total: prod[3], unit: prod[4].toUpperCase(), deliveries: [], completed: false, note: "" };
-                masterData.push(current);
+                fileMasterData.push(current);
             } else if (del && current) {
                 current.deliveries.push({ order: del[1], client: del[3].trim(), qty: del[4], unit: del[5].toUpperCase(), checked: false });
             }
         });
-        document.getElementById('obsArea').style.display = 'block';
-        document.getElementById('tabBar').style.display = 'flex';
-        saveCurrentState(); 
-        checkAndAutoSaveHistory(); 
-        render();
+
+        return { motorista, veiculo, masterData: fileMasterData };
+    }
+
+    document.getElementById('pdfFile').addEventListener('change', function(e) {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        pendingFilesArray = Array.from(files);
+
+        if (pendingFilesArray.length === 1) {
+            processPDFFiles(pendingFilesArray, 'consolidate');
+        } else {
+            document.getElementById('lblNumFiles').innerText = pendingFilesArray.length;
+            toggleModal('importModeModal');
+        }
+        this.value = '';
+    });
+
+    async function executeImportMode(mode) {
+        toggleModal('importModeModal');
+        if (!pendingFilesArray || pendingFilesArray.length === 0) return;
+        await processPDFFiles(pendingFilesArray, mode);
+        pendingFilesArray = null;
+    }
+
+    async function processPDFFiles(files, mode) {
+        document.getElementById('loading').style.display = 'block';
+        pushUndoState();
+
+        try {
+            if (mode === 'consolidate') {
+                let allMasterData = [];
+                let motoristasSet = new Set();
+                let veiculosSet = new Set();
+
+                for (let i = 0; i < files.length; i++) {
+                    let result = await parsePDFFile(files[i]);
+                    motoristasSet.add(result.motorista);
+                    veiculosSet.add(result.veiculo);
+
+                    result.masterData.forEach(p => {
+                        let existingProd = allMasterData.find(item => item.id === p.id && item.name.trim() === p.name.trim());
+                        if (existingProd) {
+                            p.deliveries.forEach(d => {
+                                let existingDel = existingProd.deliveries.find(ed => ed.order === d.order && ed.client.trim() === d.client.trim());
+                                if (!existingDel) {
+                                    existingProd.deliveries.push(d);
+                                }
+                            });
+                            recalculateProductTotalDirect(existingProd);
+                        } else {
+                            allMasterData.push(p);
+                        }
+                    });
+                }
+
+                masterData = allMasterData;
+                if (motoristasSet.size > 0) {
+                    document.getElementById('lblMotorista').innerText = Array.from(motoristasSet).join(' / ');
+                }
+                if (veiculosSet.size > 0) {
+                    document.getElementById('lblVeiculo').innerText = Array.from(veiculosSet).join(' / ');
+                }
+
+                document.getElementById('obsArea').style.display = 'block';
+                document.getElementById('tabBar').style.display = 'flex';
+                saveCurrentState(); 
+                checkAndAutoSaveHistory(); 
+                render();
+
+            } else if (mode === 'separate') {
+                let history = JSON.parse(localStorage.getItem('romaneio_history') || '[]');
+                let importedCount = 0;
+                let firstResult = null;
+
+                for (let i = 0; i < files.length; i++) {
+                    let result = await parsePDFFile(files[i]);
+                    if (result.masterData.length > 0) {
+                        let isCompleted = result.masterData.every(p => p.completed && (!p.note || p.note.trim() === ""));
+                        
+                        const romaneioItem = {
+                            id: Date.now() + i,
+                            date: new Date().toLocaleString(),
+                            motorista: result.motorista,
+                            veiculo: result.veiculo,
+                            data: result.masterData,
+                            obs: "",
+                            completed100: isCompleted
+                        };
+
+                        history.unshift(romaneioItem);
+                        importedCount++;
+                        if (!firstResult) firstResult = romaneioItem;
+                    }
+                }
+
+                localStorage.setItem('romaneio_history', JSON.stringify(history));
+                document.getElementById('loading').style.display = 'none';
+                alert(`${importedCount} romaneio(s) importado(s) e salvo(s) separadamente no Histórico!`);
+                
+                if (firstResult && confirm("Deseja abrir o primeiro romaneio importado agora na tela principal?")) {
+                    masterData = firstResult.data;
+                    document.getElementById('lblMotorista').innerText = firstResult.motorista;
+                    document.getElementById('lblVeiculo').innerText = firstResult.veiculo;
+                    document.getElementById('txtObs').value = firstResult.obs || "";
+                    document.getElementById('obsArea').style.display = 'block';
+                    document.getElementById('tabBar').style.display = 'flex';
+                    saveCurrentState();
+                    render();
+                } else {
+                    document.getElementById('loading').style.display = 'none';
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao ler os arquivos PDF.");
+            document.getElementById('loading').style.display = 'none';
+        }
     }
 
     // --- RENDERIZAÇÃO ---
@@ -701,7 +846,6 @@
         localStorage.setItem('current_romaneio', JSON.stringify(payload));
     }
 
-    // --- VERIFICAÇÃO DE 100% COMPLETO PARA PASTAS DO HISTÓRICO ---
     function isRomaneioCompleted100() {
         if (!masterData.length) return false;
         return masterData.every(p => p.completed && (!p.note || p.note.trim() === ""));
