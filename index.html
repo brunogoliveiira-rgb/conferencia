@@ -77,20 +77,17 @@
         .product-note-display { display: inline-block; background: #fef9e7; border: 1px dashed var(--warning); color: #d68910; font-size: 0.8rem; padding: 3px 8px; border-radius: 8px; margin-top: 2px; width: 100%; font-weight: normal; }
         .highlight { background-color: #d4efdf !important; border-radius: 4px; padding: 2px 4px; font-weight: bold; color: #145a32; }
 
-        #calcBtn { position: fixed; bottom: 25px; right: 25px; width: 65px; height: 65px; border-radius: 50%; background: var(--accent); color: white; border: none; font-size: 28px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 1000; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: none; user-select: none; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 480px; box-sizing: border-box; }
         .history-item { border-bottom: 1px solid #eee; padding: 12px 0; display: flex; justify-content: space-between; align-items: center; }
 
         @media print {
-            .no-print, #calcBtn, .tabs, .button-grid, .search-container, .btn-options { display: none !important; }
+            .no-print, .tabs, .button-grid, .search-container, .btn-options { display: none !important; }
             .product-group { display: block !important; break-inside: avoid; border: 1px solid #ccc; }
         }
     </style>
 </head>
 <body>
-
-<button id="calcBtn" class="no-print">➕</button>
 
 <!-- MODAL CALCULADORA -->
 <div id="calcModal" class="modal" onclick="this.style.display='none'">
@@ -269,9 +266,13 @@
             <button class="btn" style="background:var(--accent)" onclick="openNewProductModal()">➕ PRODUTO</button>
             <button class="btn" style="background:var(--info)" onclick="window.print()">📄 RELATÓRIO</button>
         </div>
-        <div style="margin-bottom: 12px;">
-            <button class="btn" style="background:var(--danger); width: 100%;" onclick="resetApp()">🗑️ LIMPAR TUDO</button>
+        
+        <!-- Botões de Calculadora e Limpar Tudo lado a lado -->
+        <div class="button-grid" style="margin-bottom: 12px;">
+            <button class="btn" style="background:#8e44ad" onclick="toggleModal('calcModal')">🧮 CALCULADORA</button>
+            <button class="btn" style="background:var(--danger)" onclick="resetApp()">🗑️ LIMPAR TUDO</button>
         </div>
+        
         <input type="file" id="pdfFile" accept="application/pdf" multiple style="display:none">
     </div>
 
@@ -297,87 +298,6 @@
     let selectedProductIdx = null;
     let actionHistory = [];
     let pendingFilesArray = null;
-    let currentCalcPos = null; // Posição atual do botão da calculadora
-
-    // --- LÓGICA DE ARRASTAR O BOTÃO DA CALCULADORA ---
-    const calcBtn = document.getElementById('calcBtn');
-    let isDragging = false;
-    let hasMoved = false;
-    let startX, startY;
-    let btnX, btnY;
-
-    calcBtn.addEventListener('pointerdown', (e) => {
-        isDragging = true;
-        hasMoved = false;
-        startX = e.clientX;
-        startY = e.clientY;
-
-        const rect = calcBtn.getBoundingClientRect();
-        btnX = rect.left;
-        btnY = rect.top;
-
-        calcBtn.setPointerCapture(e.pointerId);
-        e.preventDefault();
-    });
-
-    calcBtn.addEventListener('pointermove', (e) => {
-        if (!isDragging) return;
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-
-        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-            hasMoved = true;
-        }
-
-        if (hasMoved) {
-            let newX = btnX + dx;
-            let newY = btnY + dy;
-
-            const maxX = window.innerWidth - calcBtn.offsetWidth;
-            const maxY = window.innerHeight - calcBtn.offsetHeight;
-            newX = Math.max(10, Math.min(newX, maxX - 10));
-            newY = Math.max(10, Math.min(newY, maxY - 10));
-
-            calcBtn.style.left = newX + 'px';
-            calcBtn.style.top = newY + 'px';
-            calcBtn.style.bottom = 'auto';
-            calcBtn.style.right = 'auto';
-        }
-    });
-
-    calcBtn.addEventListener('pointerup', (e) => {
-        if (!isDragging) return;
-        isDragging = false;
-        calcBtn.releasePointerCapture(e.pointerId);
-
-        if (hasMoved) {
-            const rect = calcBtn.getBoundingClientRect();
-            currentCalcPos = { left: rect.left, top: rect.top };
-            saveCurrentState();
-            checkAndAutoSaveHistory();
-        } else {
-            toggleModal('calcModal');
-        }
-    });
-
-    function applyCalcPosition() {
-        if (currentCalcPos && currentCalcPos.left !== undefined && currentCalcPos.top !== undefined) {
-            const maxX = window.innerWidth - 65;
-            const maxY = window.innerHeight - 65;
-            let l = Math.max(10, Math.min(currentCalcPos.left, maxX - 10));
-            let t = Math.max(10, Math.min(currentCalcPos.top, maxY - 10));
-
-            calcBtn.style.left = l + 'px';
-            calcBtn.style.top = t + 'px';
-            calcBtn.style.bottom = 'auto';
-            calcBtn.style.right = 'auto';
-        } else {
-            calcBtn.style.left = 'auto';
-            calcBtn.style.top = 'auto';
-            calcBtn.style.bottom = '25px';
-            calcBtn.style.right = '25px';
-        }
-    }
 
     function sanitizeAndFilter(input) {
         if (input.value.startsWith(' ')) {
@@ -408,8 +328,7 @@
             masterData: masterData,
             motorista: document.getElementById('lblMotorista').innerText,
             veiculo: document.getElementById('lblVeiculo').innerText,
-            obs: document.getElementById('txtObs').value,
-            calcPos: currentCalcPos
+            obs: document.getElementById('txtObs').value
         });
         actionHistory.push(currentState);
         if (actionHistory.length > 20) actionHistory.shift();
@@ -424,8 +343,6 @@
         document.getElementById('lblMotorista').innerText = lastState.motorista;
         document.getElementById('lblVeiculo').innerText = lastState.veiculo;
         document.getElementById('txtObs').value = lastState.obs;
-        currentCalcPos = lastState.calcPos || null;
-        applyCalcPosition();
         saveCurrentState();
         checkAndAutoSaveHistory();
         render();
@@ -578,9 +495,6 @@
                     document.getElementById('lblVeiculo').innerText = Array.from(veiculosSet).join(' / ');
                 }
 
-                currentCalcPos = null; // Reseta para a posição padrão em novo romaneio
-                applyCalcPosition();
-
                 document.getElementById('obsArea').style.display = 'block';
                 document.getElementById('tabBar').style.display = 'flex';
                 saveCurrentState(); 
@@ -604,8 +518,7 @@
                             veiculo: result.veiculo,
                             data: result.masterData,
                             obs: "",
-                            completed100: isCompleted,
-                            calcPos: null
+                            completed100: isCompleted
                         };
 
                         history.unshift(romaneioItem);
@@ -623,8 +536,6 @@
                     document.getElementById('lblMotorista').innerText = firstResult.motorista;
                     document.getElementById('lblVeiculo').innerText = firstResult.veiculo;
                     document.getElementById('txtObs').value = firstResult.obs || "";
-                    currentCalcPos = firstResult.calcPos || null;
-                    applyCalcPosition();
                     document.getElementById('obsArea').style.display = 'block';
                     document.getElementById('tabBar').style.display = 'flex';
                     saveCurrentState();
@@ -936,8 +847,7 @@
             masterData, 
             motorista: document.getElementById('lblMotorista').innerText, 
             veiculo: document.getElementById('lblVeiculo').innerText, 
-            obs: document.getElementById('txtObs').value,
-            calcPos: currentCalcPos
+            obs: document.getElementById('txtObs').value 
         };
         localStorage.setItem('current_romaneio', JSON.stringify(payload));
     }
@@ -963,8 +873,7 @@
             veiculo: veiculoAtual,
             data: masterData,
             obs: document.getElementById('txtObs').value,
-            completed100: isCompleted,
-            calcPos: currentCalcPos
+            completed100: isCompleted
         };
 
         if (indexExistente !== -1) {
@@ -1021,8 +930,6 @@
             document.getElementById('lblMotorista').innerText = item.motorista;
             document.getElementById('lblVeiculo').innerText = item.veiculo; 
             document.getElementById('txtObs').value = item.obs || "";
-            currentCalcPos = item.calcPos || null;
-            applyCalcPosition();
             document.getElementById('obsArea').style.display = 'block'; 
             document.getElementById('tabBar').style.display = 'flex';
             toggleModal('historyModal'); 
@@ -1099,8 +1006,6 @@
                 document.getElementById('lblMotorista').innerText = d.motorista;
                 document.getElementById('lblVeiculo').innerText = d.veiculo; 
                 document.getElementById('txtObs').value = d.obs || "";
-                currentCalcPos = d.calcPos || null;
-                applyCalcPosition();
                 document.getElementById('obsArea').style.display = 'block'; 
                 document.getElementById('tabBar').style.display = 'flex';
                 render();
